@@ -141,6 +141,8 @@ public class WebServer {
 			return "video/mp4";
 		else if (ressource.endsWith(".gif"))
 			return "image/gif";
+		else if (ressource.endsWith(".mp3"))
+			return "audio/mpeg";
 		else return "text/html";
 	}
 
