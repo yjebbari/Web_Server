@@ -77,7 +77,13 @@ public class WebServer {
 
 						File file = new File("D:/documents/insa_lyon/4A/S1//Programmation_reseau/Web_Server/TP-HTTP-Code/Ressources" + ressource);
 						if (!file.exists()) {
-							out.write(httpVersion + " 404"); // the file does not exists
+							out.println(httpVersion + " 404"); // the file does not exists
+							out.println("Content-Type: text/html");
+							out.println("Server: Bot");
+							// this blank line signals the end of the headers
+							out.println("");
+							// Send the HTML page
+							out.println("<H1>Error 404 : Page Not Found</H2>");
 						} else {
 							out.println(httpVersion + "200 OK");
 							out.println("Content-Type: text/html");
@@ -101,7 +107,7 @@ public class WebServer {
 						// this blank line signals the end of the headers
 						out.println("");
 						// Send the HTML page
-						out.println("<H1>Welcome to the Ultra Mini-WebServer</H2>");
+						out.println("<H1>Welcome to the Ultra Mini-WebServer</H1>");
 					}
 				}
 
