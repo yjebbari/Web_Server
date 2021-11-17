@@ -30,6 +30,11 @@ public class WebServer {
 	/**
 	 * WebServer constructor.
 	 */
+	String request = "";
+	String ressource = "";
+	String httpVersion = "";
+	String requestType = "";
+
 	protected void start() {
 		ServerSocket s;
 
@@ -51,75 +56,25 @@ public class WebServer {
 				// remote is now the connected socket
 				System.out.println("Connection, sending data.");
 				BufferedReader in = new BufferedReader(new InputStreamReader(remote.getInputStream()));
-				PrintWriter out = new PrintWriter(remote.getOutputStream());
-				BufferedOutputStream dataOutStream= new BufferedOutputStream(remote.getOutputStream());
-				
+				BufferedOutputStream dataOutStream = new BufferedOutputStream(remote.getOutputStream());
+
 				// read the data sent. We basically ignore it,
 				// stop reading once a blank line is hit. This
 				// blank line signals the end of the client HTTP
 				// headers.
+				request = "";
 				String str = ".";
-				String request = "";
 				while (str != null && !str.equals("")) {
 					str = in.readLine();
 					request += str + "\n";
 				}
-
-				String ressource = "";
-				String httpVersion = "";
-				if (request.contains("GET")) {
-					request = request.replace("GET /", "/");
-					ressource = request.substring(request.indexOf("/"), request.indexOf("H")-1);
-					request = request.replace(ressource + " H", "H");
-					httpVersion = request.substring(0, request.indexOf("Host"));
-
-					System.out.println(ressource);
-					System.out.println();
-					if (!ressource.equals("/")) {
-						String unString = "D:/documents/insa_lyon/4A/S1/Programmation_reseau/Web_Server/TP-HTTP-Code/Ressources"
-								+ ressource;
-//						unString = unString.substring(0, unString.indexOf(" "));
-						File file=new File(unString);
-						if(file.exists()) {
-							byte[] content = Files.readAllBytes(file.toPath());
-							System.out.println(file.toPath());
-							
-							out.println(httpVersion + "200 OK");
-							String typeRessource=ressourceContentType(ressource);
-							out.println("Content-Type: "+typeRessource);
-							out.println("Content-Length: "+(int)content.length);
-							System.out.println(typeRessource);
-							out.println("Server: Bot");
-							// this blank line signals the end of the headers
-							out.println("");
-							dataOutStream.write(content, 0, (int)content.length);
-							
-							//out.println(new String(content));
-							//dataOutStream.();
-						}else{
-							out.println(httpVersion + " 404"); // the file does not exists
-							out.println("Content-Type: "+ressourceContentType(ressource));
-							
-							out.println("Server: Bot");
-							// this blank line signals the end of the headers
-							out.println("");
-							// Send the HTML page
-							out.println("<H1>Error 404 : Page Not Found</H1>");
-						}
-					} else {
-						// Send the response
-						// Send the headers
-						out.println(httpVersion + " 200 OK");
-						out.println("Content-Type: text/html");
-						out.println("Server: Bot");
-						// this blank line signals the end of the headers
-						out.println("");
-						// Send the HTML page
-						out.println("<H1>Welcome to the Ultra Mini-WebServer</H1>");
-					}
+				requestType = request.substring(0, request.indexOf("/") - 1);
+				System.out.println(requestType);
+				if (requestType.equals("GET")) {
+					requestGet(dataOutStream);
+				}else if(requestType.equals("HEAD")){
+					requestHead(dataOutStream);
 				}
-				
-				out.flush();
 				dataOutStream.flush();
 				remote.close();
 			} catch (Exception e) {
@@ -130,12 +85,12 @@ public class WebServer {
 	}
 
 	public String ressourceContentType(String ressource) {
-		System.out.println('.'+ressource+'.');
+		System.out.println('.' + ressource + '.');
 		if (ressource.endsWith(".html"))
 			return "text/html";
 		else if (ressource.endsWith(".png"))
 			return "image/png";
-		else if (ressource.endsWith(".jpg")||ressource.endsWith(".jpeg"))
+		else if (ressource.endsWith(".jpg") || ressource.endsWith(".jpeg"))
 			return "image/jpeg";
 		else if (ressource.endsWith(".mp4"))
 			return "video/mp4";
@@ -143,7 +98,89 @@ public class WebServer {
 			return "image/gif";
 		else if (ressource.endsWith(".mp3"))
 			return "audio/mpeg";
-		else return "text/html";
+		else
+			return "text/html";
+	}
+
+	public void requestGet(BufferedOutputStream dataOutStream) {
+		ressource = request.substring(request.indexOf("/"), request.indexOf("H") - 1);
+		httpVersion = request.substring(request.indexOf("HTTP/"), request.indexOf("Host"));
+		try {
+			if (!ressource.equals("/")) {
+				String unString = "C:/Users/yousr/Documents/GitHub/Web_Server/TP-HTTP-Code/Ressources" + ressource;
+				File file = new File(unString);
+				if (file.exists()) {
+					byte[] content = Files.readAllBytes(file.toPath());
+					dataOutStream.write((httpVersion + "200 OK" + "\n").getBytes());
+					String typeRessource = ressourceContentType(ressource);
+					dataOutStream.write(("Content-Type: " + typeRessource + "\n").getBytes());
+					dataOutStream.write(("Content-Length: " + (int) content.length + "\n").getBytes());
+					dataOutStream.write(("Server: Bot\n").getBytes());
+					// this blank line signals the end of the headers
+					dataOutStream.write(("\n").getBytes());
+					dataOutStream.write(content, 0, (int) content.length);
+				} else {
+					dataOutStream.write((httpVersion + " 404" + "\n").getBytes());
+					dataOutStream.write(("Content-Type: " + ressourceContentType(ressource) + "\n").getBytes());
+					dataOutStream.write(("Server: Bot" + "\n").getBytes());
+					// this blank line signals the end of the headers
+					dataOutStream.write(("\n").getBytes());
+					// Send the HTML page
+					dataOutStream.write(("<H1>Error 404 : Page Not Found</H1>").getBytes());
+				}
+			} else {
+				// Send the response
+				// Send the headers
+				dataOutStream.write((httpVersion + " 200 OK" + "\n").getBytes());
+				dataOutStream.write(("Content-Type: text/html" + "\n").getBytes());
+				dataOutStream.write(("Server: Bot" + "\n").getBytes());
+				// this blank line signals the end of the headers
+				dataOutStream.write(("\n").getBytes());
+				// Send the HTML page
+				dataOutStream.write(("<H1>Welcome to the Ultra Mini-WebServer</H1>").getBytes());
+			}
+			dataOutStream.flush();
+		} catch (Exception e) {
+			//faire erreur 500
+		}
+	}
+	
+	public void requestHead(BufferedOutputStream dataOutStream) {
+		ressource = request.substring(request.indexOf("/"), request.indexOf("H") - 1);
+		httpVersion = request.substring(request.indexOf("HTTP/"), request.indexOf("Host"));
+		try {
+			if (!ressource.equals("/")) {
+				String unString = "C:/Users/yousr/Documents/GitHub/Web_Server/TP-HTTP-Code/Ressources" + ressource;
+				File file = new File(unString);
+				if (file.exists()) {
+					dataOutStream.write((httpVersion + "200 OK" + "\n").getBytes());
+					String typeRessource = ressourceContentType(ressource);
+					dataOutStream.write(("Content-Type: " + typeRessource + "\n").getBytes());
+					dataOutStream.write(("Server: Bot\n").getBytes());
+					// this blank line signals the end of the headers
+					dataOutStream.write(("\n").getBytes());
+				} else {
+					dataOutStream.write((httpVersion + " 404" + "\n").getBytes());
+					dataOutStream.write(("Content-Type: " + ressourceContentType(ressource) + "\n").getBytes());
+					dataOutStream.write(("Server: Bot" + "\n").getBytes());
+					// this blank line signals the end of the headers
+					dataOutStream.write(("\n").getBytes());
+					// Send the HTML page
+				}
+			} else {
+				// Send the response
+				// Send the headers
+				dataOutStream.write((httpVersion + " 200 OK" + "\n").getBytes());
+				dataOutStream.write(("Content-Type: text/html" + "\n").getBytes());
+				dataOutStream.write(("Server: Bot" + "\n").getBytes());
+				// this blank line signals the end of the headers
+				dataOutStream.write(("\n").getBytes());
+				// Send the HTML page
+			}
+			dataOutStream.flush();
+		} catch (Exception e) {
+			//faire erreur 500
+		}
 	}
 
 	/**
