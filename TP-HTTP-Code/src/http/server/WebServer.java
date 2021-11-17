@@ -75,8 +75,8 @@ public class WebServer {
 
 					System.out.println(ressource);
 					System.out.println();
-					if (!ressource.equals("/ ")) {
-						String unString = "C:/Users/yousr/Documents/GitHub/Web_Server/TP-HTTP-Code/Ressources"
+					if (!ressource.equals("/")) {
+						String unString = "D:/documents/insa_lyon/4A/S1/Programmation_reseau/Web_Server/TP-HTTP-Code/Ressources"
 								+ ressource;
 //						unString = unString.substring(0, unString.indexOf(" "));
 						File file=new File(unString);
@@ -137,6 +137,10 @@ public class WebServer {
 			return "image/png";
 		else if (ressource.endsWith(".jpg")||ressource.endsWith(".jpeg"))
 			return "image/jpeg";
+		else if (ressource.endsWith(".mp4"))
+			return "video/mp4";
+		else if (ressource.endsWith(".gif"))
+			return "image/gif";
 		else return "text/html";
 	}
 
