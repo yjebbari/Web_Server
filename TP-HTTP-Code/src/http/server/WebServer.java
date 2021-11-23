@@ -176,6 +176,7 @@ public class WebServer {
 			if (!resource.equals("/")) {
 				String resourcePath = Paths.get("").toAbsolutePath().getParent().getParent().getParent().toString()
 						.replace(System.getProperty("file.separator"), "/") + "/ressources" + resource;
+				System.out.println(resourcePath);
 				File file = new File(resourcePath);
 				if (file.exists()) {
 					byte[] content = Files.readAllBytes(file.toPath());

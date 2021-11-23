@@ -1,0 +1,1 @@
+To start the Web Server, open a terminal from the "WebServer.java" file location and run the command "javac WebServer.java".
