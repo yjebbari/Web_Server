@@ -73,6 +73,11 @@ public class WebServer {
 				BufferedReader in = new BufferedReader(new InputStreamReader(remote.getInputStream()));
 				BufferedOutputStream dataOutStream = new BufferedOutputStream(remote.getOutputStream());
 
+				// the following BufferedOutputStream is used to write the body of the response
+				// of a GET
+				// request, i.e the content of the specified resource
+				BufferedOutputStream contentOutPut = new BufferedOutputStream(remote.getOutputStream());
+
 				request = "";
 				requestType = "";
 				String str = ".";
@@ -92,7 +97,7 @@ public class WebServer {
 				}
 
 				if (requestType.equals("GET")) {
-					requestGet(dataOutStream, remote);
+					requestGet(dataOutStream, contentOutPut);
 				} else if (requestType.equals("HEAD")) {
 					requestHead(dataOutStream);
 				} else if (requestType.equals("PUT")) {
@@ -103,6 +108,7 @@ public class WebServer {
 					requestPost(dataOutStream, in);
 				}
 				dataOutStream.flush();
+				contentOutPut.flush();
 				remote.close();
 			} catch (Exception e) {
 				System.out.println("Error: " + e);
@@ -150,13 +156,16 @@ public class WebServer {
 	 * If no resource is specified in the request, a 200 OK return code is sent,
 	 * along with a simple HTML default content.
 	 * 
-	 * If the method catches an exception it sends a 500 Internal Server Error return code.
+	 * If the method catches an exception it sends a 500 Internal Server Error
+	 * return code.
 	 * 
 	 * @param dataOutStream The Buffered Output Stream in which the Web Server
 	 *                      writes its response
-	 * @param remote        The server socket
+	 * @param contentOutPut The Buffered Output Stream in which the Web Server
+	 *                      writes the body of the response of the GET request, i.e
+	 *                      the content of the specified resource
 	 */
-	public void requestGet(BufferedOutputStream dataOutStream, Socket remote) {
+	public void requestGet(BufferedOutputStream dataOutStream, BufferedOutputStream contentOutPut) {
 		// aString contains the first part of a request until the HTTP version (not
 		// included)
 		String aString = request.substring(0, request.indexOf("HTTP/"));
@@ -178,9 +187,6 @@ public class WebServer {
 					// this blank line signals the end of the headers
 					dataOutStream.write(("\n").getBytes());
 					dataOutStream.flush();
-					// the following BufferedOutputStream is for the body of the response, i.e the
-					// content of the specified resource
-					BufferedOutputStream contentOutPut = new BufferedOutputStream(remote.getOutputStream());
 					contentOutPut.write(content, 0, (int) content.length);
 					contentOutPut.flush();
 				} else {
@@ -203,12 +209,14 @@ public class WebServer {
 				dataOutStream.write(("<H1>Welcome to the Ultra Mini-WebServer</H1>").getBytes());
 			}
 			dataOutStream.flush();
+			contentOutPut.flush();
 		} catch (Exception e) {
 			try {
 				System.out.println("Error: " + e);
 				dataOutStream.write((httpVersion + " 500" + "\n").getBytes());
 				dataOutStream.write(("\n").getBytes());
 				dataOutStream.flush();
+				contentOutPut.flush();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -231,7 +239,8 @@ public class WebServer {
 	 * If no resource is specified in the request, a 200 OK return code is sent,
 	 * along with a simple HTML default content.
 	 * 
-	 * If the method catches an exception it sends a 500 Internal Server Error return code.
+	 * If the method catches an exception it sends a 500 Internal Server Error
+	 * return code.
 	 * 
 	 * @param dataOutStream The Buffered Output Stream in which the Web Server
 	 *                      writes its response
@@ -244,7 +253,7 @@ public class WebServer {
 		String aString = request.substring(0, request.indexOf("HTTP/"));
 		resource = aString.substring(aString.lastIndexOf("/"), aString.lastIndexOf(" "));
 		httpVersion = request.substring(request.indexOf("HTTP/"), request.indexOf("\n"));
-																							
+
 		boolean fileExists = true;
 		try {
 			if (!resource.equals("/")) {
@@ -315,7 +324,8 @@ public class WebServer {
 	 * If no resource is specified in the request, a 200 OK return code is sent,
 	 * along with a simple HTML default content.
 	 * 
-	 * If the method catches an exception it sends a 500 Internal Server Error return code.
+	 * If the method catches an exception it sends a 500 Internal Server Error
+	 * return code.
 	 * 
 	 * @param dataOutStream The Buffered Output Stream in which the Web Server
 	 *                      writes its response
@@ -328,7 +338,7 @@ public class WebServer {
 		String aString = request.substring(0, request.indexOf("HTTP/"));
 		resource = aString.substring(aString.lastIndexOf("/"), aString.lastIndexOf(" "));
 		httpVersion = request.substring(request.indexOf("HTTP/"), request.indexOf("\n"));
-																							
+
 		boolean fileExists = true;
 		try {
 			if (!resource.equals("/")) {
@@ -397,7 +407,8 @@ public class WebServer {
 	 * If no resource is specified in the request, a 200 OK return code is sent,
 	 * along with a simple HTML default content.
 	 * 
-	 * If the method catches an exception it sends a 500 Internal Server Error return code.
+	 * If the method catches an exception it sends a 500 Internal Server Error
+	 * return code.
 	 * 
 	 * @param dataOutStream The Buffered Output Stream in which the Web Server
 	 *                      writes its response
@@ -463,7 +474,8 @@ public class WebServer {
 	 * If no resource is specified in the request, a 200 OK return code is sent,
 	 * along with a simple HTML default content.
 	 * 
-	 * If the method catches an exception it sends a 500 Internal Server Error return code.
+	 * If the method catches an exception it sends a 500 Internal Server Error
+	 * return code.
 	 * 
 	 * @param dataOutStream The Buffered Output Stream in which the Web Server
 	 *                      writes its response
@@ -487,7 +499,6 @@ public class WebServer {
 					dataOutStream.write(("Content-Length: " + (int) file.length() + "\n").getBytes());
 					// this blank line signals the end of the headers
 					dataOutStream.write(("\n").getBytes());
-					dataOutStream.write(("<H2>RESOURCE EXISTS</H2>").getBytes());
 				} else {
 					dataOutStream.write((httpVersion + " 404" + "\n").getBytes());
 					dataOutStream.write(("Content-Type: " + resourceContentType(resource) + "\n").getBytes());
