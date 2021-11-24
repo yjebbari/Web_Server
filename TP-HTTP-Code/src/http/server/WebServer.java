@@ -176,7 +176,6 @@ public class WebServer {
 			if (!resource.equals("/")) {
 				String resourcePath = Paths.get("").toAbsolutePath().getParent().getParent().getParent().toString()
 						.replace(System.getProperty("file.separator"), "/") + "/ressources" + resource;
-				System.out.println(resourcePath);
 				File file = new File(resourcePath);
 				if (file.exists()) {
 					byte[] content = Files.readAllBytes(file.toPath());
@@ -436,8 +435,11 @@ public class WebServer {
 					}
 				} else {
 					dataOutStream.write((httpVersion + " 404" + "\n").getBytes());
+					dataOutStream.write(("Content-Type: text/html" + "\n").getBytes());
+					dataOutStream.write(("Server: Bot" + "\n").getBytes());
 					// this blank line signals the end of the headers
 					dataOutStream.write(("\n").getBytes());
+					dataOutStream.write(("<H1>Error 404 : Page Not Found</H1>").getBytes());
 				}
 			} else {
 				// Send the headers
