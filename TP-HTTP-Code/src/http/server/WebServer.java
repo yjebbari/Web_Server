@@ -472,8 +472,7 @@ public class WebServer {
 	 * If the resource is specified in the request but doesn't exists, a 404 NOT
 	 * FOUND return code is sent.
 	 * 
-	 * If no resource is specified in the request, a 200 OK return code is sent,
-	 * along with a simple HTML default content.
+	 * If no resource is specified in the request, a 200 OK return code is sent.
 	 * 
 	 * If the method catches an exception it sends a 500 Internal Server Error
 	 * return code.
@@ -502,7 +501,6 @@ public class WebServer {
 					dataOutStream.write(("\n").getBytes());
 				} else {
 					dataOutStream.write((httpVersion + " 404" + "\n").getBytes());
-					dataOutStream.write(("Content-Type: " + resourceContentType(resource) + "\n").getBytes());
 					dataOutStream.write(("Server: Bot" + "\n").getBytes());
 					// this blank line signals the end of the headers
 					dataOutStream.write(("\n").getBytes());
@@ -510,12 +508,9 @@ public class WebServer {
 			} else {
 				// Send the headers
 				dataOutStream.write((httpVersion + " 200 OK" + "\n").getBytes());
-				dataOutStream.write(("Content-Type: text/html" + "\n").getBytes());
 				dataOutStream.write(("Server: Bot" + "\n").getBytes());
 				// this blank line signals the end of the headers
 				dataOutStream.write(("\n").getBytes());
-				// Send the HTML page
-				dataOutStream.write(("<H1>Welcome to the Ultra Mini-WebServer</H1>").getBytes());
 			}
 			dataOutStream.flush();
 		} catch (Exception e) {
